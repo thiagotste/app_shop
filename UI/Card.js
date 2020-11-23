@@ -1,18 +1,9 @@
 import React from 'react';
-import {
-    View, Text, StyleSheet, Image, TouchableOpacity, TouchableNativeFeedback, Platform
-} from 'react-native';
+import { View, TouchableElement, Text, Image, StyleSheet } from 'react-native'
 
-import Card from '../../UI/Card';
-
-const ProductItem = props => {
-    let TouchableElement = TouchableNativeFeedback;
-    if (Platform.OS === 'ios') {
-        TouchableElement = TouchableOpacity;
-    };
-
+const Card = ( props ) => {
+    console.log(props.title);
     return (
-        // <Card onSelect={props.onSelect} image={props.image} title={props.title} price={props.price} children={props.children} />
         <View style={style.product}>
             <TouchableElement onPress={props.onSelect} useForeground>
                 <View>
@@ -75,4 +66,4 @@ const style = StyleSheet.create({
     }
 });
 
-export default ProductItem;
+export default Card;

@@ -1,92 +1,167 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Platform } from 'react-native';
+import React, { useCallback, useReducer } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView } from 'react-native';
 import HeaderButton from '../../UI/HeaderButton';
 import Colors from '../../constants/Color';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { createProduct, updateProduct } from '../../store/action/products';
+import Input from '../../UI/input';
 
+const FORM_INPUT_UPDATE = 'FORM_INPUT_UPDATE'
+const formReducer = (state, action) => {
+    if (action.type === FORM_INPUT_UPDATE) {
+        const updatedValues = {
+            ...state.inputValues,
+            [action.input]: action.value
+        };
+        const updatedValidities = {
+            ...state.inputValidities,
+            [action.input]: action.isValid
+        };
+        let formIsValid = true;
+        for (const key in updatedValidities) {
+            
+            formIsValid = formIsValid && updatedValidities[key];
+        }
+        return {
+            formIsValid: formIsValid,
+            inputValues: updatedValues,
+            inputValidities: updatedValidities
+        };
+    }
+    return state;
+};
 
 const EditProductScreen = props => {
     const { productId } = props.route.params || '';
     const product = useSelector(state => {
         return state.products.availableProducts.find(ele => ele.id === productId);
     });
-    const [title, setTitle] = useState(product ? product.title : '');
-    const [url, setUrl] = useState(product ? product.imageUrl : '');
-    const [price, setPrice] = useState(product ? product.price.toString() : '');
-    const [description, setDescription] = useState(product ? product.description : '');
+    const dispatch = useDispatch();
+
+    const [formState, dispatchFormState] = useReducer(formReducer,
+        {
+            inputValues: {
+                title: product ? product.title : '',
+                imageUrl: product ? product.imageUrl : '',
+                price: '',
+                description: product ? product.description : ''
+            }, inputValidities: {
+                title: product ? true : false,
+                imageUrl: product ? true : false,
+                price: product ? true : false,
+                description: product ? true : false
+            }, formIsValid: product ? true : false,
+        });
+
+
+    const inputChangeHandler = useCallback((inputIdentifier, inputValue, inputValidity) => {
+        dispatchFormState(
+            {
+                type: FORM_INPUT_UPDATE,
+                value: inputValue,
+                isValid: inputValidity,
+                input: inputIdentifier
+            });
+    }, [dispatchFormState]);
+
+    const submitHandler = useCallback(() => {
+        if (!formState.formIsValid) {
+            Alert.alert('Valor errado!',
+                'Por favor, corrija os valores no formulário.',
+                [{ text: 'Ok' }]);
+            return;
+        }
+        productId ? dispatch(updateProduct(
+            product.id,
+            formState.inputValues.title,
+            product.ownerId,
+            formState.inputValues.imageUrl,
+            formState.inputValues.price,
+            formState.inputValues.description)) : dispatch(createProduct(
+                formState.inputValues.title,
+                formState.inputValues.imageUrl,
+                +formState.inputValues.price,
+                formState.inputValues.description));
+        props.navigation.goBack();
+    }, [dispatch, formState]);
 
     React.useLayoutEffect(() => {
         props.navigation.setOptions({
             headerRight: () => (
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', width: 160}}>
-                    <Text style={{fontSize: 15, color: Platform.OS === 'android' ? 'white' : Colors.primary}}>{productId ? 'Editar' : 'Adicionar'}</Text>
-                    <HeaderButton onPress={() => {
-                        
-                    }} name={Platform.OS === 'android' ? 'md-checkmark' : 'ios-checkmark'} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 160 }}>
+                    <Text style={{ fontSize: 15, color: Platform.OS === 'android' ? 'white' : Colors.primary }}>{productId ? 'Editar' : 'Adicionar'}</Text>
+                    <HeaderButton onPress={submitHandler}
+                        name={Platform.OS === 'android' ? 'md-checkmark' : 'ios-checkmark'} />
                 </View>
             )
         });
-    }, [props.navigation]);
+    }, [props.navigation, submitHandler]);
 
     return (
-        <ScrollView style={{backgroundColor: 'white'}}>
-            <View style={style.container}>
-                <View style={style.inputView}>
-                    <Text style={style.text}>Título</Text>
-                    <TextInput
-                        style={style.input}
-                        onChangeText={text => setTitle(text)}
-                        value={title}
-                    />
+        <KeyboardAvoidingView style={{flex: 1}}>
+            <ScrollView style={{ backgroundColor: 'white' }}>
+                <View style={style.container}>
+                    <Input
+                        id="title"
+                        text="Título"
+                        errorInput="Por favor, digite um título válido"
+                        keyboardType='default'
+                        ainitialValue={product ? product.title : ''}
+                        initialValid={!!product}
+                        Capitalize='sentences'
+                        autoCorrect
+                        returnKeyType='next'
+                        required
+                        onInputChange={inputChangeHandler}
+                    ></Input>
+
+                    <Input
+                        id="imageUrl"
+                        text="Url da imagem"
+                        errorInput="Por favor, digite uma Url da imagem válida"
+                        keyboardType='default'
+                        returnKeyType='next'
+                        initialValue={product ? product.imageUrl : ''}
+                        initialValid={!!product}
+                        required
+                        onInputChange={inputChangeHandler}
+                    ></Input>
+
+                    {productId ? null :
+                        (
+                            <Input
+                                id="price"
+                                text="Preço"
+                                errorInput="Por favor, digite um preço válido"
+                                keyboardType='decimal-pad'
+                                returnKeyType='next'
+                                required
+                                min={0.1}
+                                onInputChange={inputChangeHandler}
+                            ></Input>)}
+
+                    <Input
+                        id="description"
+                        text="Descrição"
+                        errorInput="Por favor, digite uma descrição válida"
+                        keyboardType='default'
+                        multiline
+                        numberOfLines={3}
+                        initialValue={product ? product.description : ''}
+                        initialValid={!!product}
+                        required
+                        minLength={5}
+                        onInputChange={inputChangeHandler}
+                    ></Input>
                 </View>
-                <View style={style.inputView}>
-                    <Text style={style.text}>Url da imagem</Text>
-                    <TextInput
-                        style={style.input}
-                        onChangeText={text => setUrl(text)}
-                        value={url}
-                    />
-                </View>
-                <View style={style.inputView}>
-                    <Text style={style.text}>Preço</Text>
-                    <TextInput
-                        style={style.input}
-                        onChangeText={text => setPrice(text)}
-                        value={price}
-                    />
-                </View>
-                <View style={style.inputView}>
-                    <Text style={style.text}>Descrição</Text>
-                    <TextInput
-                        style={style.input}
-                        onChangeText={text => setDescription(text)}
-                        value={description}
-                    />
-                </View>
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 
 const style = StyleSheet.create({
     container: {
         padding: 20
-    },
-    inputView: {
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-        width: '100%'
-    },
-    input: {
-        fontSize: 15,
-        fontFamily: 'open-sans',
-        paddingHorizontal: 2,
-        paddingVertical: 5
-    },
-    text: {
-        marginVertical: 8,
-        fontFamily: 'open-sans-bold',
-        fontSize: 15
     }
 });
 
