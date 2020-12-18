@@ -1,5 +1,4 @@
-import "firebase/app";
-import "firebase/database";
+// import FireConfig from '../fireConfig';
 
 export const DELETE_PRODUCT = 'DELETE_PRODUCT';
 export const CREATE_PRODUCT = 'CREATE_PRODUCT';
@@ -9,39 +8,42 @@ export const deleteProduct = productId => {
     return { type: DELETE_PRODUCT, pid: productId };
 }
 
-export const createProduct = (title, url, price, description) => {
-    var formData = new FormData();
-    formData.append('title', title);
-    formData.append('imageUrl', url);
-    formData.append('price', price);
-    formData.append('description', description);
-    return async dispatch => {
-        const response = await fetch('https://shopping-database-d9fe1.firebaseio.com/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: formData
-        });
+export const createProduct = (title, imageUrl, price, description) => {
+    return async (dispatch) => {
+        // const data = new FireConfig();
 
-        // response.json().then(res => {
-        //     console.log(JSON.parse(res));
+        // const formData = new FormData();
+        // formData.append('title', title);
+        // formData.append('imageUrl', imageUrl);
+        // formData.append('price', price);
+        // formData.append('description', description);
+
+        // const database = data.database;
+
+        // const products = database.ref('products');
+        // const newPostRef = products.push();
+        // newPostRef.set(formData).then((result) => {
+        //     console.log('sucesso');
         // });
-
-        const resData = await response.json();
-
-        console.log('resdata', resData.title);
-
-        dispatch(
+        const response = await fetch('https://shopping-database-d9fe1.firebaseio.com/products.json',
             {
-                type: CREATE_PRODUCT,
-                product: {
-                    title: title,
-                    imageUrl: url,
-                    price: price,
-                    description: description
-                }
+                method: 'POST',
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({title, imageUrl, price, description})
             });
+
+            const resData = await response.json();
+
+        dispatch({
+            type: CREATE_PRODUCT,
+            product: {
+                id: resData.name,
+                title: title,
+                imageUrl: imageUrl,
+                price: price,
+                description: description
+            }
+        });
     };
 };
 
@@ -58,3 +60,4 @@ export const updateProduct = (id, title, ownerId, url, price, description) => {
         }
     };
 }
+

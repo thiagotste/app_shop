@@ -1,6 +1,5 @@
 import PRODUCTS from '../../data/dummy-data';
-import { DELETE_PRODUCT } from '../action/products';
-import { CREATE_PRODUCT, UPDATE_PRODUCT } from '../action/products';
+import { CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT } from '../action/products';
 import Product from '../../models/product';
 
 const initialState = {
@@ -27,7 +26,7 @@ export default productsReducers = (state = initialState, action) => {
             let arrayProducts = [...state.availableProducts];
 
             const product = new Product(
-                `p${arrayProducts.length + 1}`,
+                action.product.id,
                 'u1', 
                 action.product.title,
                 action.product.imageUrl,
