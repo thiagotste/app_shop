@@ -39,7 +39,8 @@ const style = StyleSheet.create({
         backgroundColor: 'white',
         height: 300,
         marginTop: 20,
-        marginHorizontal: 15
+        marginHorizontal: 15,
+        marginBottom: 20
     },
     imageContainer: {
         width: '100%',
