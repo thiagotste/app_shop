@@ -1,12 +1,14 @@
-import React from 'react';
-import { View, StyleSheet, FlatList, Text, Button } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet, FlatList, Text, Button, ActivityIndicator } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import Color from '../../constants/Color';
+import Colors from '../../constants/Color';
 import CartItem from '../../components/shop/CartItem';
 import { removeFromCart } from '../../store/action/cart';
 import { addOrder } from '../../store/action/orders';
 
 const CartScreen = props => {
+    const [isloading, setIsloading] = useState(false);
+    const [error, setError] = useState();
     const totalAmount = useSelector(state => {
         return state.cart.totalAmount;
     });
@@ -30,16 +32,43 @@ const CartScreen = props => {
 
     const dispatch = useDispatch();
 
+    const sendOrder = useCallback(async () => {
+        setIsloading(true);
+        setError(null);
+        try {
+            await dispatch(
+                addOrder(cartItem, totalAmount)
+            )
+            setIsloading(false);
+        } catch (error) {
+            setIsloading(false);
+            setErro(error.message);
+        }
+    }, [cartItem, totalAmount]);
+
+    useEffect(() => {
+        if (error) {
+            Alert.alert('Ocorreu um erro!',
+                error,
+                [{ text: 'Ok' }]);
+        }
+    }, [error]);
+
     return (
         <View style={style.container}>
             <View style={style.amount}>
                 <Text style={style.amountText}>Total: <Text style={style.amountColor}>R${Math.round(totalAmount.toFixed(2) * 100) / 100}</Text></Text>
-                <Button
-                    color={Color.accent}
-                    title="Fazer pedido"
-                    disabled={cartItem.length === 0}
-                    onPress={() => dispatch(addOrder(cartItem, totalAmount))}
-                ></Button>
+
+                {isloading ? <ActivityIndicator size="small" color={Colors.primary} color={Colors.primary} /> :
+                    (
+                        <Button
+                            color={Colors.accent}
+                            title="Fazer pedido"
+                            disabled={cartItem.length === 0}
+                            onPress={sendOrder}
+                        ></Button>
+                    )
+                }
             </View>
             <View>
                 <FlatList
@@ -80,7 +109,7 @@ const style = StyleSheet.create({
         fontSize: 18
     },
     amountColor: {
-        color: Color.primary
+        color: Colors.primary
     },
     list: {
         backgroundColor: 'white'

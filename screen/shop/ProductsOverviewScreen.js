@@ -1,19 +1,22 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { FlatList, Platform, Button,
-    ActivityIndicator, View, StyleSheet, Text } from 'react-native';
+import {
+    FlatList, Platform, Button,
+    ActivityIndicator, View, StyleSheet, Text
+} from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import ProductItem from '../../components/shop/ProductItem';
 import * as CartActions from '../../store/action/cart';
 import HeaderButton from '../../UI/HeaderButton';
 import Color from '../../constants/Color';
 import { getProduct } from '../../store/action/products';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import Colors from '../../constants/Color';
 import { useFocusEffect } from '@react-navigation/native';
 
 
 
 const ProductsOverviewScreen = props => {
     const [isLoading, setIsLoding] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState();
     const dispatch = useDispatch();
     const products = useSelector(state => {
@@ -22,13 +25,13 @@ const ProductsOverviewScreen = props => {
 
     const loadingProducts = useCallback(async () => {
         setError(null);
-        setIsLoding(true);
+        setIsRefreshing(true);
         try {
             await dispatch(getProduct());
         } catch (error) {
             setError(error.message);
         }
-        setIsLoding(false);
+        setIsRefreshing(false);
     }, [setIsLoding, dispatch, setError]);
 
     //react navigation drawer não atauliza os dados da tela
@@ -45,14 +48,17 @@ const ProductsOverviewScreen = props => {
 
     useFocusEffect(
         useCallback(() => {
-            const unsubscribe =  loadingProducts();
+            const unsubscribe = loadingProducts();
 
             return () => unsubscribe;
         }, [loadingProducts])
     );
 
     useEffect(() => {
-        loadingProducts();
+        setIsLoding(true);
+        loadingProducts().then(() => {
+            setIsLoding(false);
+        });
     }, [dispatch, loadingProducts]);
 
     React.useLayoutEffect(() => {
@@ -79,7 +85,7 @@ const ProductsOverviewScreen = props => {
     if (error) {
         return <View style={styles.centered}>
             <Text>Um erro ocorreu!</Text>
-            <Button title="Tenta de novo!" onPress={loadingProducts}/>
+            <Button title="Tenta de novo!" onPress={loadingProducts} />
         </View>
     }
 
@@ -97,6 +103,8 @@ const ProductsOverviewScreen = props => {
 
     return (
         <FlatList
+            onRefresh={loadingProducts}
+            refreshing={isRefreshing}
             data={products}
             keyExtractor={item => item.id}
             renderItem={itemData =>

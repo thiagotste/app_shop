@@ -1,5 +1,12 @@
-import React, { useCallback, useReducer } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, Alert, KeyboardAvoidingView } from 'react-native';
+import React, {
+    useCallback, useEffect, useReducer,
+    useState
+} from 'react';
+import {
+    View, Text, StyleSheet, ScrollView,
+    Platform, ActivityIndicator, Alert,
+    KeyboardAvoidingView
+} from 'react-native';
 import HeaderButton from '../../UI/HeaderButton';
 import Colors from '../../constants/Color';
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,7 +26,7 @@ const formReducer = (state, action) => {
         };
         let formIsValid = true;
         for (const key in updatedValidities) {
-            
+
             formIsValid = formIsValid && updatedValidities[key];
         }
         return {
@@ -32,6 +39,8 @@ const formReducer = (state, action) => {
 };
 
 const EditProductScreen = props => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState();
     const { productId } = props.route.params || '';
     const product = useSelector(state => {
         return state.products.availableProducts.find(ele => ele.id === productId);
@@ -64,26 +73,35 @@ const EditProductScreen = props => {
             });
     }, [dispatchFormState]);
 
-    const submitHandler = useCallback(() => {
-        if (!formState.formIsValid) {
-            Alert.alert('Valor errado!',
-                'Por favor, corrija os valores no formulário.',
-                [{ text: 'Ok' }]);
-            return;
-        }
-        productId ? dispatch(updateProduct(
-            product.id,
-            formState.inputValues.title,
-            product.ownerId,
-            formState.inputValues.imageUrl,
-            formState.inputValues.price,
-            formState.inputValues.description)) : dispatch(createProduct(
+    const submitHandler = useCallback(async () => {
+        setError(null);
+        setIsLoading(true);
+        try {
+            if (!formState.formIsValid) {
+                Alert.alert('Valor errado!',
+                    'Por favor, corrija os valores no formulário.',
+                    [{ text: 'Ok' }]);
+                return;
+            }
+            productId ? await dispatch(updateProduct(
+                product.id,
                 formState.inputValues.title,
+                product.ownerId,
                 formState.inputValues.imageUrl,
-                +formState.inputValues.price,
-                formState.inputValues.description));
-        props.navigation.goBack();
-    }, [dispatch, formState]);
+                formState.inputValues.price,
+                formState.inputValues.description)) :
+                await dispatch(createProduct(
+                    formState.inputValues.title,
+                    formState.inputValues.imageUrl,
+                    +formState.inputValues.price,
+                    formState.inputValues.description));
+            setIsLoading(false);
+            props.navigation.goBack();
+        } catch (error) {
+            setIsLoading(false);
+            setError(error.message);
+        }
+    }, [dispatch, formState, setError, setIsLoading]);
 
     React.useLayoutEffect(() => {
         props.navigation.setOptions({
@@ -97,8 +115,22 @@ const EditProductScreen = props => {
         });
     }, [props.navigation, submitHandler]);
 
+    useEffect(() => {
+        if (error) {
+            Alert.alert('Ocorreu um erro!',
+                error,
+                [{ text: 'Ok' }]);
+        }
+    }, [error]);
+
+    if (isLoading) {
+        return <View style={style.centered}>
+            <ActivityIndicator size="large" color={Colors.primary} color={Colors.primary} />
+        </View>
+    }
+
     return (
-        <KeyboardAvoidingView style={{flex: 1}}>
+        <KeyboardAvoidingView style={{ flex: 1 }}>
             <ScrollView style={{ backgroundColor: 'white' }}>
                 <View style={style.container}>
                     <Input
@@ -106,7 +138,7 @@ const EditProductScreen = props => {
                         text="Título"
                         errorInput="Por favor, digite um título válido"
                         keyboardType='default'
-                        ainitialValue={product ? product.title : ''}
+                        initialValue={product ? product.title : ''}
                         initialValid={!!product}
                         Capitalize='sentences'
                         autoCorrect
@@ -114,7 +146,6 @@ const EditProductScreen = props => {
                         required
                         onInputChange={inputChangeHandler}
                     ></Input>
-
                     <Input
                         id="imageUrl"
                         text="Url da imagem"
@@ -162,6 +193,11 @@ const EditProductScreen = props => {
 const style = StyleSheet.create({
     container: {
         padding: 20
+    },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 

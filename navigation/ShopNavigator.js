@@ -12,11 +12,15 @@ import UserProductScreen from '../screen/user/UserProductScreen';
 import EditProductScreen from '../screen/user/EditProductScreen';
 import Colors from '../constants/Color';
 import { Ionicons } from '@expo/vector-icons';
+import AuthScreen from '../screen/user/AuthScreen';
 
+const AuthNavigator = createStackNavigator();
 const ProductNavigator = createStackNavigator();
 const OrdersNavigator = createStackNavigator();
 const AdminNavigator = createStackNavigator();
 const DrawerNavigator = createDrawerNavigator();
+
+let isSignedIn = false;
 
 const productNavigator = () => {
     return (
@@ -50,11 +54,20 @@ const adminNavigator = () => {
 const shopNavigator = () => {
     return (
         <NavigationContainer>
-            <DrawerNavigator.Navigator drawerContentOptions={DrawerNavigatorStyle}>
-                <DrawerNavigator.Screen name="Products" options={{ title: 'Produtos', drawerIcon: drawerIconProducts }} component={productNavigator} />
-                <DrawerNavigator.Screen name="Orders" options={{ title: 'Pedidos', drawerIcon: drawerIconOrders }} component={ordersNavigator} />
-                <DrawerNavigator.Screen name="Admin" options={{ title: 'Admin', drawerIcon: drawerIconAdmin }} component={adminNavigator} />
-            </DrawerNavigator.Navigator>
+            {isSignedIn ?
+                (
+                    <DrawerNavigator.Navigator drawerContentOptions={DrawerNavigatorStyle}>
+                        <DrawerNavigator.Screen name="Products" options={{ title: 'Produtos', drawerIcon: drawerIconProducts }} component={productNavigator} />
+                        <DrawerNavigator.Screen name="Orders" options={{ title: 'Pedidos', drawerIcon: drawerIconOrders }} component={ordersNavigator} />
+                        <DrawerNavigator.Screen name="Admin" options={{ title: 'Admin', drawerIcon: drawerIconAdmin }} component={adminNavigator} />
+                    </DrawerNavigator.Navigator>
+                ) :
+                (
+                    <AuthNavigator.Navigator screenOptions={ProductNavigatorStyle} initialRouteName="AuthScreen">
+                        <AuthNavigator.Screen name="AuthScreen" options={{ title: 'Seus Produtos' }} component={AuthScreen} />
+                    </AuthNavigator.Navigator>
+                )
+            }
         </NavigationContainer>
     );
 }

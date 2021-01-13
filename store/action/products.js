@@ -5,8 +5,24 @@ export const CREATE_PRODUCT = 'CREATE_PRODUCT';
 export const UPDATE_PRODUCT = 'UPDATE_PRODUCT';
 export const SET_PRODUCTS = 'SET_PRODUCTS';
 
-export const deleteProduct = productId => {
-    return { type: DELETE_PRODUCT, pid: productId };
+export const deleteProduct = id => {
+    return async dispatch => {
+        try {
+            const response = await fetch(
+                `https://shopping-database-d9fe1.firebaseio.com/products/${id}.json`,
+                {
+                    method: 'DELETE',
+                    headers: { "Content-Type": "text/plain" }
+                });
+
+            if (!response.ok) {
+                throw new Error('Algum erro ocorreu!');
+            }
+            dispatch({ type: DELETE_PRODUCT, pid: id });
+        } catch (erro) {
+            throw erro;
+        }
+    }
 }
 
 export const createProduct = (title, imageUrl, price, description) => {
@@ -30,21 +46,41 @@ export const createProduct = (title, imageUrl, price, description) => {
                 description: description
             }
         });
-    };
-};
+    }
+}
 
-export const updateProduct = (id, title, ownerId, url, price, description) => {
-    return {
-        type: UPDATE_PRODUCT,
-        product: {
-            id: id,
-            title: title,
-            ownerId: ownerId,
-            imageUrl: url,
-            price: +price,
-            description: description
+export const updateProduct = (id, title, ownerId, imageUrl, price, description) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(
+                `https://shopping-database-d9fe1.firebaseio.com/products/${id}.json`,
+                {
+                    method: 'PATCH',
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ title, imageUrl, description })
+                });
+
+            if (!response.ok) {
+                throw new Error('Algum erro ocorreu!');
+            }
+
+            dispatch(
+                {
+                    type: UPDATE_PRODUCT,
+                    product: {
+                        id: id,
+                        title: title,
+                        ownerId: ownerId,
+                        imageUrl: imageUrl,
+                        price: +price,
+                        description: description
+                    }
+                });
+
+        } catch (error) {
+            throw error;
         }
-    };
+    }
 }
 
 export const getProduct = () => {
