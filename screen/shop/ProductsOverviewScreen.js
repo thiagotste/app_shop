@@ -65,7 +65,7 @@ const ProductsOverviewScreen = props => {
         props.navigation.setOptions({
             headerRight: () => (
                 <HeaderButton onPress={() => {
-                    props.navigation.navigate('CartScreen')
+                    props.navigation.navigate('CartScreen');
                 }} name={Platform.OS === 'android' ? 'md-cart' : 'ios-cart'} />
             ),
             headerLeft: () => (
@@ -91,7 +91,7 @@ const ProductsOverviewScreen = props => {
 
     if (isLoading) {
         return <View style={styles.centered}>
-            <ActivityIndicator size="large" color={Colors.primary} color={Colors.primary} />
+            <ActivityIndicator size="large" color={Colors.primary} />
         </View>
     }
 

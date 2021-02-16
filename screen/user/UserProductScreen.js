@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, Platform, Button, Alert } from 'react-native';
+import { FlatList, Platform, Button, Alert, StyleSheet, View, Text } from 'react-native';
 import ProductItem from '../../components/shop/ProductItem';
 import { useSelector, useDispatch } from 'react-redux';
 import HeaderButton from '../../UI/HeaderButton'
@@ -40,6 +40,12 @@ const UserProductScreen = props => {
             ]);
     };
 
+    if ( userProduct.length === 0) {
+        return <View style={styles.centered}>
+            <Text>Nenhum produto encontrado!</Text>
+        </View>
+    }
+
     return (
         <FlatList data={userProduct}
             keyExtractor={item => item.id}
@@ -56,5 +62,13 @@ const UserProductScreen = props => {
             } />
     );
 };
+
+const styles = StyleSheet.create({
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+});
 
 export default UserProductScreen;

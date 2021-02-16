@@ -10,11 +10,10 @@ const initialState = {
 export default productsReducers = (state = initialState, action) => {
     switch (action.type) {
         case SET_PRODUCTS:
+            // console.log(action.userProducts);
             return {
                 availableProducts: action.products,
-                userProducts: action.products.filter(val => {
-                    return val.ownerId === 'u1'
-                })
+                userProducts: action.userProducts
             };
 
         case DELETE_PRODUCT:
@@ -33,7 +32,7 @@ export default productsReducers = (state = initialState, action) => {
 
             const product = new Product(
                 action.product.id,
-                'u1',
+                action.product.ownerId,
                 action.product.title,
                 action.product.imageUrl,
                 action.product.description,
@@ -46,7 +45,7 @@ export default productsReducers = (state = initialState, action) => {
                 ...state,
                 availableProducts: arrayProducts,
                 userProducts: arrayProducts.filter(val => {
-                    return val.ownerId === 'u1'
+                    return val.ownerId === action.product.ownerId
                 })
             };
 

@@ -1,8 +1,13 @@
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, Alert, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import {
+    createDrawerNavigator,
+    DrawerContentScrollView,
+    DrawerItemList,
+    DrawerItem
+} from '@react-navigation/drawer';
 
 import ProductsOverviewScreen from '../screen/shop/ProductsOverviewScreen';
 import ProductDetail from '../screen/shop/ProductDetailScreen';
@@ -13,14 +18,17 @@ import EditProductScreen from '../screen/user/EditProductScreen';
 import Colors from '../constants/Color';
 import { Ionicons } from '@expo/vector-icons';
 import AuthScreen from '../screen/user/AuthScreen';
+import StartupScreen from '../screen/StartupScreen';
+
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/action/auth';
 
 const AuthNavigator = createStackNavigator();
 const ProductNavigator = createStackNavigator();
 const OrdersNavigator = createStackNavigator();
 const AdminNavigator = createStackNavigator();
 const DrawerNavigator = createDrawerNavigator();
-
-let isSignedIn = false;
+const StartupScreenNavigator = createStackNavigator();
 
 const productNavigator = () => {
     return (
@@ -51,19 +59,60 @@ const adminNavigator = () => {
     );
 };
 
+const startupScreenNavigator = () => {
+    return (
+        <StartupScreenNavigator.Navigator >
+            <StartupScreenNavigator.Screen name="StartupScreen" component={StartupScreen} />
+        </StartupScreenNavigator.Navigator>
+    );
+}
+
+function CustomDrawerContent(props) {
+    const dispatch = useDispatch();
+    const component = () =>
+        <View style={{
+            flex: 1, justifyContent: 'center',
+            alignItems: 'center', height: 40, backgroundColor: Colors.primary
+        }}>
+            <Text style={{ color: 'white', fontSize: 20 }}>Sair</Text>
+        </View>
+
+    return (
+        <DrawerContentScrollView {...props}>
+            <DrawerItemList {...props} />
+            <DrawerItem
+                label={component}
+                onPress={() => {
+                    dispatch(logout());
+                    // props.navigation.navigate('Startup');
+                }}
+                labelStyle={{
+                    color: 'white',
+                    backgroundColor: 'red',
+                }}
+            />
+        </DrawerContentScrollView>
+    );
+}
+
 const shopNavigator = () => {
+    const auth = useSelector(state => {
+        return state.auth;
+    });
     return (
         <NavigationContainer>
-            {isSignedIn ?
+            {auth.token !== null ?
                 (
-                    <DrawerNavigator.Navigator drawerContentOptions={DrawerNavigatorStyle}>
+                    <DrawerNavigator.Navigator drawerContentOptions={DrawerNavigatorStyle}
+                        drawerContent={props => <CustomDrawerContent {...props} />}>
                         <DrawerNavigator.Screen name="Products" options={{ title: 'Produtos', drawerIcon: drawerIconProducts }} component={productNavigator} />
                         <DrawerNavigator.Screen name="Orders" options={{ title: 'Pedidos', drawerIcon: drawerIconOrders }} component={ordersNavigator} />
                         <DrawerNavigator.Screen name="Admin" options={{ title: 'Admin', drawerIcon: drawerIconAdmin }} component={adminNavigator} />
                     </DrawerNavigator.Navigator>
                 ) :
                 (
-                    <AuthNavigator.Navigator screenOptions={ProductNavigatorStyle} initialRouteName="AuthScreen">
+                    <AuthNavigator.Navigator screenOptions={ProductNavigatorStyle} initialRouteName="Startup">
+                        <AuthNavigator.Screen name="Startup" component={startupScreenNavigator} />
                         <AuthNavigator.Screen name="AuthScreen" options={{ title: 'Seus Produtos' }} component={AuthScreen} />
                     </AuthNavigator.Navigator>
                 )

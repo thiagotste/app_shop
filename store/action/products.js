@@ -6,10 +6,11 @@ export const UPDATE_PRODUCT = 'UPDATE_PRODUCT';
 export const SET_PRODUCTS = 'SET_PRODUCTS';
 
 export const deleteProduct = id => {
-    return async dispatch => {
+    return async (dispatch, getState) => {
+        const { auth } = getState();
         try {
             const response = await fetch(
-                `https://shopping-database-d9fe1.firebaseio.com/products/${id}.json`,
+                `https://shopping-database-d9fe1.firebaseio.com/products/${id}.json?auth=${auth.token}`,
                 {
                     method: 'DELETE',
                     headers: { "Content-Type": "text/plain" }
@@ -26,12 +27,14 @@ export const deleteProduct = id => {
 }
 
 export const createProduct = (title, imageUrl, price, description) => {
-    return async (dispatch) => {
-        const response = await fetch('https://shopping-database-d9fe1.firebaseio.com/products.json',
+    return async (dispatch, getState) => {
+        const { auth } = getState();
+        const { userId } = auth;
+        const response = await fetch(`https://shopping-database-d9fe1.firebaseio.com/products.json?auth=${auth.token}`,
             {
                 method: 'POST',
                 headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({ title, imageUrl, price, description })
+                body: JSON.stringify({ title, imageUrl, price, description, userId })
             });
 
         const resData = await response.json();
@@ -43,17 +46,19 @@ export const createProduct = (title, imageUrl, price, description) => {
                 title: title,
                 imageUrl: imageUrl,
                 price: price,
-                description: description
+                description: description,
+                ownerId: userId
             }
         });
     }
 }
 
 export const updateProduct = (id, title, ownerId, imageUrl, price, description) => {
-    return async dispatch => {
+    return async (dispatch, getState) => {
+        const { auth } = getState();
         try {
             const response = await fetch(
-                `https://shopping-database-d9fe1.firebaseio.com/products/${id}.json`,
+                `https://shopping-database-d9fe1.firebaseio.com/products/${id}.json?auth=${auth.token}`,
                 {
                     method: 'PATCH',
                     headers: { "Content-Type": "text/plain" },
@@ -84,7 +89,8 @@ export const updateProduct = (id, title, ownerId, imageUrl, price, description) 
 }
 
 export const getProduct = () => {
-    return async dispatch => {
+    return async (dispatch, getState) => {
+        const { userId } = getState().auth;
         try {
             const response = await fetch('https://shopping-database-d9fe1.firebaseio.com/products.json',
                 {
@@ -103,7 +109,7 @@ export const getProduct = () => {
                 loadedProducts.push(
                     new Product(
                         key,
-                        'u1',
+                        resData[key].ownerId,
                         resData[key].title,
                         resData[key].imageUrl,
                         resData[key].description,
@@ -114,7 +120,8 @@ export const getProduct = () => {
             dispatch(
                 {
                     type: SET_PRODUCTS,
-                    products: loadedProducts
+                    products: loadedProducts,
+                    userProducts: loadedProducts.filter( prod => prod.ownerId === userId)
                 }
             );
         } catch (erro) {

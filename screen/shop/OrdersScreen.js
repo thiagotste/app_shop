@@ -62,7 +62,7 @@ const OrderScreen = props => {
 
     if (!isLoading && orders.length === 0) {
         return <View style={styles.centered}>
-            <Text>Nenhum produto encontrado!</Text>
+            <Text>Nenhum pedido encontrado!</Text>
         </View>
     }
 
