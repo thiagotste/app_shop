@@ -2,6 +2,13 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 export const AUTHENTICATE = 'AUTHENTICATE';
 export const LOGOUT = 'LOGOUT';
+export const SET_DID_TRY_AL = 'SET_DID_TRY_AL';
+
+let timer;
+
+export const setDidTryAl = () => {
+    return { type: SET_DID_TRY_AL }
+  }
 
 export const authenticate = (token, userId, expiryTimer) => {
     return dispatch => {
@@ -9,8 +16,6 @@ export const authenticate = (token, userId, expiryTimer) => {
         dispatch({ type: AUTHENTICATE, userId: userId, token: token });
     };
 }
-
-let timer;
 
 export const signup = (email, password) => {
     return async dispatch => {

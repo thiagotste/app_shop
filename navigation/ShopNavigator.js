@@ -50,7 +50,7 @@ const ordersNavigator = () => {
     );
 }
 
-const adminNavigator = () => {
+export const adminNavigator = () => {
     return (
         <AdminNavigator.Navigator screenOptions={ProductNavigatorStyle} initialRouteName="UserProductScreen">
             <AdminNavigator.Screen name="UserProductScreen" options={{ title: 'Seus Produtos' }} component={UserProductScreen} />
@@ -59,13 +59,13 @@ const adminNavigator = () => {
     );
 };
 
-const startupScreenNavigator = () => {
-    return (
-        <StartupScreenNavigator.Navigator >
-            <StartupScreenNavigator.Screen name="StartupScreen" component={StartupScreen} />
-        </StartupScreenNavigator.Navigator>
-    );
-}
+// const startupScreenNavigator = () => {
+//     return (
+//         <StartupScreenNavigator.Navigator >
+//             <StartupScreenNavigator.Screen name="StartupScreen" component={StartupScreen} />
+//         </StartupScreenNavigator.Navigator>
+//     );
+// }
 
 function CustomDrawerContent(props) {
     const dispatch = useDispatch();
@@ -95,29 +95,56 @@ function CustomDrawerContent(props) {
     );
 }
 
-const shopNavigator = () => {
-    const auth = useSelector(state => {
-        return state.auth;
-    });
+export const ShopNavigator = () => {
+    // const auth = useSelector(state => {
+    //     return state.auth;
+    // });
     return (
-        <NavigationContainer>
-            {auth.token !== null ?
-                (
-                    <DrawerNavigator.Navigator drawerContentOptions={DrawerNavigatorStyle}
-                        drawerContent={props => <CustomDrawerContent {...props} />}>
-                        <DrawerNavigator.Screen name="Products" options={{ title: 'Produtos', drawerIcon: drawerIconProducts }} component={productNavigator} />
-                        <DrawerNavigator.Screen name="Orders" options={{ title: 'Pedidos', drawerIcon: drawerIconOrders }} component={ordersNavigator} />
-                        <DrawerNavigator.Screen name="Admin" options={{ title: 'Admin', drawerIcon: drawerIconAdmin }} component={adminNavigator} />
-                    </DrawerNavigator.Navigator>
-                ) :
-                (
-                    <AuthNavigator.Navigator screenOptions={ProductNavigatorStyle} initialRouteName="Startup">
-                        <AuthNavigator.Screen name="Startup" component={startupScreenNavigator} />
-                        <AuthNavigator.Screen name="AuthScreen" options={{ title: 'Seus Produtos' }} component={AuthScreen} />
-                    </AuthNavigator.Navigator>
-                )
-            }
-        </NavigationContainer>
+        <DrawerNavigator.Navigator
+            drawerContentOptions={DrawerNavigatorStyle}
+            drawerContent={props => <CustomDrawerContent {...props} />}
+        >
+            <DrawerNavigator.Screen
+                name="Products"
+                options={{ title: 'Produtos', drawerIcon: drawerIconProducts }}
+                component={productNavigator} />
+            <DrawerNavigator.Screen
+                name="Orders"
+                options={{ title: 'Pedidos', drawerIcon: drawerIconOrders }}
+                component={ordersNavigator} />
+            <DrawerNavigator.Screen
+                name="Admin"
+                options={{ title: 'Admin', drawerIcon: drawerIconAdmin }}
+                component={adminNavigator} />
+        </DrawerNavigator.Navigator>
+
+
+        // <NavigationContainer>
+        //     {auth.token !== null ?
+        //         (
+        //             <DrawerNavigator.Navigator drawerContentOptions={DrawerNavigatorStyle}
+        //                 drawerContent={props => <CustomDrawerContent {...props} />}>
+        //                 <DrawerNavigator.Screen name="Products" options={{ title: 'Produtos', drawerIcon: drawerIconProducts }} component={productNavigator} />
+        //                 <DrawerNavigator.Screen name="Orders" options={{ title: 'Pedidos', drawerIcon: drawerIconOrders }} component={ordersNavigator} />
+        //                 <DrawerNavigator.Screen name="Admin" options={{ title: 'Admin', drawerIcon: drawerIconAdmin }} component={adminNavigator} />
+        //             </DrawerNavigator.Navigator>
+        //         ) :
+        //         (
+        //             <AuthNavigator.Navigator screenOptions={ProductNavigatorStyle} initialRouteName="Startup">
+        //                 <AuthNavigator.Screen name="Startup" component={startupScreenNavigator} />
+        //                 <AuthNavigator.Screen name="AuthScreen" options={{ title: 'Seus Produtos' }} component={AuthScreen} />
+        //             </AuthNavigator.Navigator>
+        //         )
+        //     }
+        // </NavigationContainer>
+    );
+}
+
+export const AuthNav = () => {
+    return (
+        <AuthNavigator.Navigator screenOptions={ProductNavigatorStyle}>
+            <AuthNavigator.Screen name="AuthScreen" options={{ title: 'Login' }} component={AuthScreen} />
+        </AuthNavigator.Navigator>
     );
 }
 
@@ -147,4 +174,4 @@ const drawerIconAdmin = (props) => {
         color={props.color} />
 };
 
-export default shopNavigator;
+// export default shopNavigator;

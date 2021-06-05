@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import Color from '../constants/Color';
 import { useDispatch } from 'react-redux';
-import { authenticate } from '../store/action/auth';
+import { authenticate, setDidTryAl } from '../store/action/auth';
 
 const StartupScreen = props => {
     const dispatch = useDispatch();
@@ -12,7 +12,8 @@ const StartupScreen = props => {
         const tryLoging = async () => {
             const userData = await AsyncStorage.getItem('userData');
             if (!userData) {
-                props.navigation.navigate('AuthScreen');
+                // props.navigation.navigate('AuthScreen');
+                dispatch(setDidTryAl());
                 return;
             }
             const transformedDate = JSON.parse(userData);
@@ -20,13 +21,14 @@ const StartupScreen = props => {
             const expirationDate = new Date(expiryDate);
 
             if (expirationDate <= new Date || !token || !userId) {
-                props.navigation.navigate('AuthScreen');
+                // props.navigation.navigate('AuthScreen');
+                dispatch(setDidTryAl());
                 return;
             }
 
-            const expirationTime = expirationDate.getTime() - new Date()-getTime();
+            const expirationTime = expirationDate.getTime() - new Date().getTime();
 
-            props.navigation.navigate('ProductsOverview');
+            // props.navigation.navigate('ProductsOverview');
             dispatch(authenticate(token, userId, expirationTime));
         }
 

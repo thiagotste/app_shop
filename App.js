@@ -11,6 +11,7 @@ import * as Font from 'expo-font';
 import ordersReduce from './store/reduce/orders';
 import authReducer from './store/reduce/auth'
 import thunk from 'redux-thunk';
+import AppNavigator from './navigation/AppNavigator';
 // import { composeWithDevTools } from 'redux-devtools-extension';
 
 
@@ -47,7 +48,7 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <ShopNavigator />
+      <AppNavigator />
     </Provider>
   );
 
